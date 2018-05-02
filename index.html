@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Web Speech API</title>
+<script src="/socket.io/socket.io.js">
+</script>
 <script>
+    
+    const socket = io.connect('https://localhost:8443');
+    
     window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
     const recognition = new webkitSpeechRecognition();
     recognition.lang = 'ja';
@@ -26,19 +31,17 @@
     recognition.onsoundend = () => {
         document.getElementById('status').innerHTML = "停止中";
     };
- 
+
     recognition.onresult =　event => {
         let results = event.results;
 
         for (var i = event.resultIndex; i < results.length; i++) {
-            if(results[i].isFinal) {
-                document.getElementById('result_text').innerHTML = results[i][0].transcript;
-            }else {
-                document.getElementById('result_text').innerHTML = "[途中経過] "+ results[i][0].transcript;
-            }
+            document.getElementById('result_text').innerHTML = results[i].isFinal
+            ? results[i][0].transcript
+            : "[途中経過] " + results[i][0].transcript;
         }
     }
-</script> 
+</script>
 </head>
 <body>
     <textarea id="result_text" cols="100" rows="10">
