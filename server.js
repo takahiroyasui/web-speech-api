@@ -1,7 +1,7 @@
 "use strict"; 
 
 const fs = require('fs');
-const https = require('https');
+const player = require('node-wav-player');
 
 // express
 const app = require('express')();
@@ -23,13 +23,18 @@ console.log('自己署名証明書サーバを起動');
 // socket.io
 const io = require('socket.io')(server);
 io.on('connection', socket => {
+    let isPlay = true;
     console.log('a user connected');
 
     socket.on('send', text => {
         console.log('recog text: ' + text);
+        if (isPlay && text == 'ピカチュウ') {
+            player.play({path: './pikachu.wav',});
+            isPlay = false;
+        }
     });
 
     socket.on('end', () => {
-
+        isPlay = true;
     });
 });
