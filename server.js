@@ -24,4 +24,8 @@ console.log('自己署名証明書サーバを起動');
 const io = require('socket.io')(server);
 io.on('connection', socket => {
     console.log('a user connected');
+
+    socket.on('send', text => {
+        console.log('recog text: ' + text);
+    });
 });
