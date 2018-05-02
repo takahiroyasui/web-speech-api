@@ -6,49 +6,54 @@
 <script src="/socket.io/socket.io.js">
 </script>
 <script>
-    
+    let isProcessing = false;
     const socket = io.connect('https://localhost:8443');
 
-    window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = 'ja';
-    
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    
-    recognition.onsoundstart = () => {
-        document.getElementById('status').innerHTML = "認識中";
-    };
-    
-    recognition.onnomatch = () => {
-        document.getElementById('status').innerHTML = "もう一度試してください";
-    };
+    function startRecognition() {
+        window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'ja';
+        recognition.interimResults = true;
+        recognition.continuous = true;
 
-    recognition.onerror= () => {
-        document.getElementById('status').innerHTML = "エラー";
-    };
+        recognition.onsoundstart = () => {
+            document.getElementById('status').innerHTML = "認識中";
+        };
+        
+        recognition.onnomatch = () => {
+            document.getElementById('status').innerHTML = "もう一度試してください";
+        };
 
-    recognition.onsoundend = () => {
-        document.getElementById('status').innerHTML = "停止中";
-    };
+        recognition.onerror= () => {
+            document.getElementById('status').innerHTML = "エラー";
+            if (!isProcessing) startRecognition();
+        };
 
-    recognition.onresult =　event => {
-        let results = event.results;
+        recognition.onsoundend = () => {
+            document.getElementById('status').innerHTML = "停止中";
+            startRecognition();
+        };
 
-        for (var i = event.resultIndex; i < results.length; i++) {
+        recognition.onresult =　event => {
+            let results = event.results;
 
-            if (results[i].isFinal) {
-                document.getElementById('result_text').innerHTML = results[i][0].transcript;
-                socket.emit('end');
-            } else {
-                document.getElementById('result_text').innerHTML = "[途中経過] " + results[i][0].transcript;
-                socket.emit('send', results[i][0].transcript);
+            for (var i = event.resultIndex; i < results.length; i++) {
+
+                if (results[i].isFinal) {
+                    document.getElementById('result_text').innerHTML = results[i][0].transcript;
+                    socket.emit('end');
+                    startRecognition();
+                } else {
+                    document.getElementById('result_text').innerHTML = "[途中経過] " + results[i][0].transcript;
+                    socket.emit('send', results[i][0].transcript);
+                    isProcessing = true;
+                }
             }
-
-            // document.getElementById('result_text').innerHTML = results[i].isFinal
-            // ? results[i][0].transcript
-            // : "[途中経過] " + results[i][0].transcript;
         }
+
+        isProcessing = false;
+        document.getElementById('status').innerHTML = "start";
+        recognition.start();
     }
 </script>
 </head>
@@ -59,6 +64,6 @@
     <textarea id="status" cols="100" rows="1">
     </textarea>
     <br>
-    <input type="button" onClick="recognition.start();" value="音認開始">
+    <input type="button" onClick="startRecognition();" value="音認開始">
 </body>
 </html>
