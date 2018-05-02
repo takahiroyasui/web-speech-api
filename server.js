@@ -28,4 +28,8 @@ io.on('connection', socket => {
     socket.on('send', text => {
         console.log('recog text: ' + text);
     });
+
+    socket.on('end', () => {
+
+    });
 });

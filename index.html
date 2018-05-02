@@ -39,9 +39,10 @@
 
             if (results[i].isFinal) {
                 document.getElementById('result_text').innerHTML = results[i][0].transcript;
-                socket.emit('send', results[i][0].transcript);
+                socket.emit('end');
             } else {
                 document.getElementById('result_text').innerHTML = "[途中経過] " + results[i][0].transcript;
+                socket.emit('send', results[i][0].transcript);
             }
 
             // document.getElementById('result_text').innerHTML = results[i].isFinal
